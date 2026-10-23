@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.ActivityRegistrationMapper">
+
+    <select id="selectById" resultType="ActivityRegistration">
+        SELECT id, user_id, activity_id, check_in_status, create_time, update_time, deleted
+        FROM activity_registration
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="ActivityRegistration">
+        SELECT id, user_id, activity_id, check_in_status, create_time, update_time, deleted
+        FROM activity_registration
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectByUserAndActivity" resultType="ActivityRegistration">
+        SELECT id, user_id, activity_id, check_in_status, create_time, update_time, deleted
+        FROM activity_registration
+        WHERE user_id = #{userId} AND activity_id = #{activityId} AND deleted = 0
+    </select>
+
+    <select id="selectByActivityId" resultType="ActivityRegistration">
+        SELECT id, user_id, activity_id, check_in_status, create_time, update_time, deleted
+        FROM activity_registration
+        WHERE activity_id = #{activityId} AND deleted = 0
+    </select>
+
+    <select id="selectAdminByActivityId" resultType="com.eldercare.core.vo.AdminRegistrationVO">
+        SELECT r.id, r.user_id AS user_id, u.phone AS phone, u.real_name AS real_name,
+               r.check_in_status AS check_in_status, r.create_time
+        FROM activity_registration r JOIN user u ON r.user_id = u.id
+        WHERE r.activity_id = #{activityId} AND r.deleted = 0 AND u.deleted = 0
+        ORDER BY r.create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO activity_registration (user_id, activity_id, check_in_status)
+        VALUES (#{userId}, #{activityId}, #{checkInStatus})
+    </insert>
+
+    <update id="checkIn">
+        UPDATE activity_registration SET check_in_status = 'CHECKED_IN'
+        WHERE id = #{id} AND check_in_status != 'CHECKED_IN' AND deleted = 0
+    </update>
+
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM activity_registration WHERE deleted = 0 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="countBetween" resultType="com.eldercare.core.vo.DateCountVO">
+        SELECT DATE(create_time) AS stat_date, COUNT(*) AS count
+        FROM activity_registration
+        WHERE deleted = 0
+          AND create_time &gt;= #{start}
+          AND create_time &lt; #{end}
+        GROUP BY DATE(create_time)
+    </select>
+
+    <update id="logicDelete">
+        UPDATE activity_registration SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

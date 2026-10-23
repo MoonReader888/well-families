@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.MessageMapper">
+
+    <select id="selectById" resultType="Message">
+        SELECT id, user_id, title, content, type, is_read, create_time, update_time, deleted
+        FROM message
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="Message">
+        SELECT id, user_id, title, content, type, is_read, create_time, update_time, deleted
+        FROM message
+        WHERE user_id = #{userId} AND deleted = 0 AND type != 'SYSTEM'
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectAnnouncements" resultType="Message">
+        SELECT id, user_id, title, content, type, is_read, create_time, update_time, deleted
+        FROM message
+        WHERE user_id = #{userId} AND deleted = 0 AND type = 'SYSTEM'
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="countUnread" resultType="long">
+        SELECT COUNT(*) FROM message WHERE user_id = #{userId} AND is_read = 0 AND deleted = 0 AND type != 'SYSTEM'
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO message (user_id, title, content, type, is_read)
+        VALUES (#{userId}, #{title}, #{content}, #{type}, #{isRead})
+    </insert>
+
+    <insert id="batchInsert">
+        INSERT INTO message (user_id, title, content, type, is_read) VALUES
+        <foreach collection="userIds" item="uid" separator=",">(#{uid}, #{title}, #{content}, #{type}, 0)</foreach>
+    </insert>
+
+    <update id="markRead">
+        UPDATE message SET is_read = 1 WHERE id = #{id} AND user_id = #{userId} AND deleted = 0
+    </update>
+
+    <select id="selectAdminPage" resultType="com.eldercare.core.vo.AdminMessageVO">
+        SELECT m.id, m.user_id AS user_id, u.phone AS phone, m.title, m.content, m.type, m.is_read, m.create_time
+        FROM message m JOIN user u ON m.user_id = u.id
+        WHERE m.deleted = 0 AND u.deleted = 0
+        <if test="phone != null and phone != ''"> AND u.phone LIKE CONCAT('%', #{phone}, '%')</if>
+        ORDER BY m.create_time DESC
+    </select>
+
+    <update id="logicDelete">
+        UPDATE message SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,47 @@
+# AI智能养老社区管理系统开发环境依赖
+# 启动 MySQL + Redis
+# docker compose up -d
+services:
+  mysql:
+    image: mysql:8.4.0
+    container_name: eldercare-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: eldercare
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    # 每10秒检查mysql是否活着
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-proot123456" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.2.0
+    container_name: eldercare-redis
+    ports:
+      - "6380:6379"
+    # 开启 AOF + RDB 持久化
+    command: [ "redis-server", "--appendonly", "yes",
+               "--appendfsync", "everysec", "--requirepass", "redis123"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+# 定义持久化卷
+volumes:
+  mysql_data:
+  redis_data:

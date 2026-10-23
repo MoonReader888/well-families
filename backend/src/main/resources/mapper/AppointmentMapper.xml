@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AppointmentMapper">
+
+    <select id="selectById" resultType="Appointment">
+        SELECT id, user_id, slot_id, package_id, status, report_url, create_time, update_time, deleted
+        FROM appointment
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="Appointment">
+        SELECT id, user_id, slot_id, package_id, status, report_url, create_time, update_time, deleted
+        FROM appointment
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO appointment (user_id, slot_id, package_id, status)
+        VALUES (#{userId}, #{slotId}, #{packageId}, #{status})
+    </insert>
+
+    <update id="updateStatus">
+        UPDATE appointment SET status = #{status}
+        WHERE id = #{id} AND deleted = 0 AND status = #{expectStatus}
+    </update>
+
+    <update id="updateStatusBatch">
+        UPDATE appointment SET status = #{status}
+        WHERE deleted = 0
+          AND status IN
+        <foreach collection="fromStatuses" item="from" open="(" separator="," close=")">
+            #{from}
+        </foreach>
+          AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateReport">
+        UPDATE appointment SET report_url = #{reportUrl}, status = 'COMPLETED'
+        WHERE id = #{id} AND deleted = 0 AND status != 'CANCELED'
+    </update>
+
+    <update id="cancel">
+        UPDATE appointment SET status = 'CANCELED'
+        WHERE id = #{id} AND deleted = 0 AND status NOT IN ('CANCELED', 'COMPLETED')
+    </update>
+
+    <update id="logicDelete">
+        UPDATE appointment SET deleted = 1 WHERE id = #{id}
+    </update>
+
+    <select id="selectForReminder" resultType="com.eldercare.core.vo.AppointmentReminderVO">
+        SELECT a.id AS appointment_id, a.user_id AS user_id, u.phone AS phone,
+               ap.name AS package_name, s.appoint_date AS appoint_date, s.time_range AS time_range
+        FROM appointment a
+        JOIN appointment_slot s ON a.slot_id = s.id
+        JOIN user u ON a.user_id = u.id
+        JOIN appointment_package ap ON a.package_id = ap.id
+        WHERE a.deleted = 0 AND s.deleted = 0 AND s.appoint_date = #{date}
+          AND a.status IN ('PENDING', 'CONFIRMED')
+    </select>
+
+    <update id="archiveBefore">
+        UPDATE appointment SET deleted = 1 WHERE create_time &lt; #{before}
+    </update>
+
+    <select id="selectVOByUserId" resultType="com.eldercare.core.vo.AppointmentVO">
+        SELECT a.id, a.package_id AS package_id, ap.name AS package_name, ap.price AS price,
+               a.slot_id AS slot_id, s.appoint_date AS appoint_date, s.time_range AS time_range,
+               a.status, a.report_url, a.create_time
+        FROM appointment a
+        JOIN appointment_package ap ON a.package_id = ap.id
+        JOIN appointment_slot s ON a.slot_id = s.id
+        WHERE a.user_id = #{userId} AND a.deleted = 0 AND ap.deleted = 0 AND s.deleted = 0
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="countToday" resultType="long">
+        SELECT COUNT(*) FROM appointment WHERE deleted = 0 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="countPending" resultType="long">
+        SELECT COUNT(*) FROM appointment WHERE deleted = 0 AND status IN ('PENDING', 'CONFIRMED')
+    </select>
+
+    <select id="countBetween" resultType="com.eldercare.core.vo.DateCountVO">
+        SELECT DATE(create_time) AS stat_date, COUNT(*) AS count
+        FROM appointment
+        WHERE deleted = 0
+          AND create_time &gt;= #{start}
+          AND create_time &lt; #{end}
+        GROUP BY DATE(create_time)
+    </select>
+
+    <select id="countByStatus" resultType="com.eldercare.core.vo.NameValueVO">
+        SELECT status AS name, COUNT(*) AS value
+        FROM appointment
+        WHERE deleted = 0
+        GROUP BY status
+    </select>
+
+    <select id="selectAdminPage" resultType="com.eldercare.core.vo.AdminAppointmentVO">
+        SELECT a.id, a.user_id AS user_id, u.phone AS phone, ap.name AS package_name,
+               s.appoint_date AS appoint_date, s.time_range AS time_range, a.status, a.report_url, a.create_time
+        FROM appointment a
+        JOIN user u ON a.user_id = u.id
+        JOIN appointment_package ap ON a.package_id = ap.id
+        JOIN appointment_slot s ON a.slot_id = s.id
+        WHERE a.deleted = 0 AND u.deleted = 0 AND ap.deleted = 0 AND s.deleted = 0
+        <if test="status != null and status != ''"> AND a.status = #{status}</if>
+        <if test="phone != null and phone != ''"> AND u.phone LIKE CONCAT('%', #{phone}, '%')</if>
+        ORDER BY a.create_time DESC
+    </select>
+
+    <select id="selectAdminById" resultType="com.eldercare.core.vo.AdminAppointmentVO">
+        SELECT a.id, a.user_id AS user_id, u.phone AS phone, ap.name AS package_name,
+               s.appoint_date AS appoint_date, s.time_range AS time_range, a.status, a.report_url, a.create_time
+        FROM appointment a
+        JOIN user u ON a.user_id = u.id
+        JOIN appointment_package ap ON a.package_id = ap.id
+        JOIN appointment_slot s ON a.slot_id = s.id
+        WHERE a.id = #{id} AND a.deleted = 0 AND u.deleted = 0 AND ap.deleted = 0 AND s.deleted = 0
+    </select>
+
+    <select id="selectVOById" resultType="com.eldercare.core.vo.AppointmentVO">
+        SELECT a.id, a.package_id AS package_id, ap.name AS package_name, ap.price AS price,
+               a.slot_id AS slot_id, s.appoint_date AS appoint_date, s.time_range AS time_range,
+               a.status, a.report_url, a.create_time
+        FROM appointment a
+        JOIN appointment_package ap ON a.package_id = ap.id
+        JOIN appointment_slot s ON a.slot_id = s.id
+        WHERE a.id = #{id} AND a.deleted = 0 AND ap.deleted = 0 AND s.deleted = 0
+    </select>
+
+</mapper>

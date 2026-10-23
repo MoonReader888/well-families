@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.HealthGuidanceMapper">
+
+    <select id="selectById" resultType="HealthGuidance">
+        SELECT id, user_id, type, content, is_read, create_time, update_time, deleted
+        FROM health_guidance
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="HealthGuidance">
+        SELECT id, user_id, type, content, is_read, create_time, update_time, deleted
+        FROM health_guidance
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO health_guidance (user_id, type, content, is_read)
+        VALUES (#{userId}, #{type}, #{content}, #{isRead})
+    </insert>
+
+    <update id="markRead">
+        UPDATE health_guidance SET is_read = 1 WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <select id="countToday" resultType="int">
+        SELECT COUNT(*) FROM health_guidance
+        WHERE user_id = #{userId} AND deleted = 0 AND DATE(create_time) = CURDATE()
+    </select>
+
+    <update id="logicDelete">
+        UPDATE health_guidance SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

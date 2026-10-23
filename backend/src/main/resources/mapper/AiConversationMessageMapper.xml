@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AiConversationMessageMapper">
+
+    <select id="selectById" resultType="AiConversationMessage">
+        SELECT id, session_id, user_id, role, message, status, create_time, update_time, deleted
+        FROM ai_conversation_message
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectBySessionId" resultType="AiConversationMessage">
+        SELECT id, session_id, user_id, role, message, status, create_time, update_time, deleted
+        FROM ai_conversation_message
+        WHERE session_id = #{sessionId} AND deleted = 0
+        ORDER BY create_time ASC, id ASC
+    </select>
+
+    <select id="selectRecent" resultType="AiConversationMessage">
+        SELECT id, session_id, user_id, role, message, status, create_time, update_time, deleted
+        FROM (
+            SELECT id, session_id, user_id, role, message, status, create_time, update_time, deleted
+            FROM ai_conversation_message
+            WHERE session_id = #{sessionId} AND deleted = 0
+            ORDER BY create_time DESC, id DESC LIMIT #{limit}
+        ) t
+        ORDER BY create_time ASC, id ASC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_conversation_message (session_id, user_id, role, message, status)
+        VALUES (#{sessionId}, #{userId}, #{role}, #{message}, #{status})
+    </insert>
+
+    <update id="logicDeleteBySession">
+        UPDATE ai_conversation_message SET deleted = 1 WHERE session_id = #{sessionId}
+    </update>
+
+    <delete id="deleteBefore">
+        DELETE FROM ai_conversation_message WHERE create_time &lt; #{before}
+    </delete>
+
+</mapper>

@@ -1,0 +1,51 @@
+/* 管理端全局样式 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #f0f2f5;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+}
+
+#app {
+  height: 100%;
+}
+
+/* 通用页面容器 */
+.page {
+  padding: 16px;
+}
+
+/* 工具条：筛选区 + 操作按钮 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+  background: #fff;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.toolbar .spacer {
+  flex: 1;
+}
+
+/* 内容卡片 */
+.content-card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 4px;
+}
+
+.pagination {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+}

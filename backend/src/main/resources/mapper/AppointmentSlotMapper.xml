@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AppointmentSlotMapper">
+
+    <select id="selectById" resultType="AppointmentSlot">
+        SELECT id, package_id, appoint_date, time_range, max_count, current_count, status, create_time, update_time, deleted
+        FROM appointment_slot
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByPackageAndDate" resultType="AppointmentSlot">
+        SELECT id, package_id, appoint_date, time_range, max_count, current_count, status, create_time, update_time, deleted
+        FROM appointment_slot
+        WHERE package_id = #{packageId} AND appoint_date = #{appointDate} AND deleted = 0
+        ORDER BY time_range
+    </select>
+
+    <select id="selectByPackage" resultType="AppointmentSlot">
+        SELECT id, package_id, appoint_date, time_range, max_count, current_count, status, create_time, update_time, deleted
+        FROM appointment_slot
+        WHERE package_id = #{packageId} AND deleted = 0
+        ORDER BY appoint_date, time_range
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO appointment_slot (package_id, appoint_date, time_range, max_count, current_count, status)
+        VALUES (#{packageId}, #{appointDate}, #{timeRange}, #{maxCount}, #{currentCount}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE appointment_slot
+        SET appoint_date = #{appointDate}, time_range = #{timeRange},
+            max_count = #{maxCount}, status = #{status}
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <select id="countExists" resultType="int">
+        SELECT COUNT(*) FROM appointment_slot
+        WHERE package_id = #{packageId} AND appoint_date = #{appointDate} AND time_range = #{timeRange} AND deleted = 0
+    </select>
+
+    <update id="occupySlot">
+        UPDATE appointment_slot SET current_count = current_count + 1,
+               status = IF(current_count + 1 >= max_count, 'FULL', status)
+        WHERE id = #{id} AND deleted = 0 AND current_count &lt; max_count AND status != 'CLOSED'
+    </update>
+
+    <update id="releaseSlot">
+        UPDATE appointment_slot SET current_count = current_count - 1, status = 'AVAILABLE'
+        WHERE id = #{id} AND deleted = 0 AND current_count > 0
+    </update>
+
+    <update id="logicDelete">
+        UPDATE appointment_slot SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

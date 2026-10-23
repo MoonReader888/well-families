@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.UserMapper">
+
+    <select id="selectById" resultType="User">
+        SELECT id,
+               phone,
+               password,
+               real_name,
+               gender,
+               birth_date,
+               height,
+               avatar,
+               emergency_contact,
+               member_level,
+               points,
+               status,
+               role,
+               create_time,
+               update_time,
+               deleted
+        FROM user
+        WHERE id = #{id}
+          AND deleted = 0
+    </select>
+
+    <select id="selectByPhone" resultType="User">
+        SELECT id,
+               phone,
+               password,
+               real_name,
+               gender,
+               birth_date,
+               height,
+               avatar,
+               emergency_contact,
+               member_level,
+               points,
+               status,
+               role,
+               create_time,
+               update_time,
+               deleted
+        FROM user
+        WHERE phone = #{phone}
+          AND deleted = 0
+    </select>
+
+    <select id="selectSafeById" resultType="User">
+        SELECT id,
+               phone,
+               real_name,
+               gender,
+               birth_date,
+               height,
+               avatar,
+               emergency_contact,
+               member_level,
+               points,
+               status,
+               role,
+               create_time,
+               update_time,
+               deleted
+        FROM user
+        WHERE id = #{id}
+          AND deleted = 0
+    </select>
+
+    <select id="selectList" resultType="User">
+        SELECT id,
+               phone,
+               real_name,
+               gender,
+               birth_date,
+               height,
+               avatar,
+               emergency_contact,
+               member_level,
+               points,
+               status,
+               role,
+               create_time,
+               update_time,
+               deleted
+        FROM user
+        WHERE deleted = 0
+        ORDER BY id
+    </select>
+
+    <select id="selectMemberPage" resultType="User">
+        SELECT id, phone, real_name, gender, birth_date, height, avatar,
+        emergency_contact, member_level, points, status, role, create_time, update_time, deleted
+        FROM user
+        WHERE role = 'MEMBER' AND deleted = 0
+        <if test="phone != null and phone != ''">AND phone LIKE CONCAT('%', #{phone}, '%')</if>
+        <if test="realName != null and realName != ''">AND real_name LIKE CONCAT('%', #{realName}, '%')</if>
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="memberLevel != null and memberLevel != ''">AND member_level = #{memberLevel}</if>
+        ORDER BY id
+    </select>
+
+    <select id="selectMemberIdsByCondition" resultType="long">
+        SELECT id
+        FROM user
+        WHERE role = 'MEMBER' AND deleted = 0
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="memberLevel != null and memberLevel != ''">AND member_level = #{memberLevel}</if>
+        <if test="startTime != null">AND create_time &gt;= #{startTime}</if>
+        <if test="endTime != null">AND create_time &lt; #{endTime}</if>
+        ORDER BY id
+    </select>
+
+    <select id="countMemberByCondition" resultType="long">
+        SELECT COUNT(*)
+        FROM user
+        WHERE role = 'MEMBER' AND deleted = 0
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        <if test="memberLevel != null and memberLevel != ''">AND member_level = #{memberLevel}</if>
+        <if test="startTime != null">AND create_time &gt;= #{startTime}</if>
+        <if test="endTime != null">AND create_time &lt; #{endTime}</if>
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT IGNORE INTO user (phone, password, real_name, gender, birth_date, height, avatar,
+                          emergency_contact, member_level, points, status, role)
+        VALUES (#{phone}, #{password}, #{realName}, #{gender}, #{birthDate}, #{height}, #{avatar},
+                #{emergencyContact}, #{memberLevel}, #{points}, #{status}, #{role})
+    </insert>
+
+    <update id="updateProfile">
+        UPDATE user
+        <set>
+            <if test="req.realName != null">real_name = #{req.realName},</if>
+            <if test="req.gender != null">gender = #{req.gender},</if>
+            <if test="req.birthDate != null">birth_date = #{req.birthDate},</if>
+            <if test="req.height != null">height = #{req.height},</if>
+            <if test="req.avatar != null">avatar = #{req.avatar},</if>
+            <if test="req.emergencyContact != null">emergency_contact = #{req.emergencyContact},</if>
+        </set>
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="updatePassword">
+        UPDATE user
+        SET password = #{password}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="changePoints">
+        UPDATE user
+        SET points = points + #{delta}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="deductPoints">
+        UPDATE user
+        SET points = points - #{delta}
+        WHERE id = #{id}
+          AND deleted = 0
+          AND points >= #{delta}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE user
+        SET status = #{status}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="updateStatusBatch">
+        UPDATE user
+        SET status = #{status}
+        WHERE deleted = 0
+          AND role = 'MEMBER'
+          AND id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+
+    <update id="updateMemberLevel">
+        UPDATE user
+        SET member_level = #{level}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="adjustPoints">
+        UPDATE user
+        SET points = points + #{delta}
+        WHERE id = #{id}
+          AND deleted = 0
+    </update>
+
+    <update id="logicDelete">
+        UPDATE user
+        SET deleted = 1
+        WHERE id = #{id}
+    </update>
+
+    <select id="countMembers" resultType="long">
+        SELECT COUNT(*)
+        FROM user
+        WHERE role = 'MEMBER'
+          AND deleted = 0
+    </select>
+
+    <select id="countTodayNewMembers" resultType="long">
+        SELECT COUNT(*)
+        FROM user
+        WHERE role = 'MEMBER'
+          AND deleted = 0
+          AND DATE (create_time) = CURDATE()
+    </select>
+
+    <select id="countNewMembersBetween" resultType="com.eldercare.core.vo.DateCountVO">
+        SELECT DATE(create_time) AS stat_date, COUNT(*) AS count
+        FROM user
+        WHERE role = 'MEMBER'
+          AND deleted = 0
+          AND create_time &gt;= #{start}
+          AND create_time &lt; #{end}
+        GROUP BY DATE(create_time)
+    </select>
+
+    <select id="countByMemberLevel" resultType="com.eldercare.core.vo.NameValueVO">
+        SELECT member_level AS name, COUNT(*) AS value
+        FROM user
+        WHERE role = 'MEMBER'
+          AND deleted = 0
+          AND member_level IS NOT NULL
+        GROUP BY member_level
+    </select>
+
+</mapper>

@@ -1,0 +1,189 @@
+/* 全局样式：适老优化（设计文档 5.3 可用性） */
+:root {
+  /* 主题色（护眼绿） */
+  --primary-color: #52a87a;
+  --primary-light: #7ec49b;
+  --primary-tint: #e8f5ec;
+
+  --danger-color: #ee0a24;
+  --warning-color: #ff976a;
+  --success-color: #07c160;
+
+  --text-main: #323233;
+  --text-secondary: #969799;
+  --text-tertiary: #646566;
+  --bg-page: #f0f6f1;
+  --border-color: #ebedf0;
+
+  /* Vant 组件主题统一指向主题色 */
+  --van-primary-color: var(--primary-color);
+  --van-success-color: var(--success-color);
+  --van-danger-color: var(--danger-color);
+  --van-warning-color: var(--warning-color);
+  --van-button-primary-background: var(--primary-color);
+  --van-button-primary-border-color: var(--primary-color);
+  --van-tabbar-item-active-color: var(--primary-color);
+  --van-tab-active-color: var(--primary-color);
+
+  /* 高度自适应（长屏适配）：--s-scale 默认 1，由 src/main.js 按屏高动态计算覆盖。
+     CSS calc 除法不允许「长度 ÷ 长度」，统一比例系数只能由 JS 赋值；此处为无 JS 时的兜底值 */
+  --s-scale: 1;
+
+  /* 适老字号：正文随屏高等比放大（Vant 4 无 --van-base-font-size，改走真实字体变量） */
+  --van-font-size-md: calc(14px * var(--s-scale));
+  --van-font-size-lg: calc(16px * var(--s-scale));
+  --van-tabbar-item-font-size: calc(13px * var(--s-scale));
+  --van-tabbar-item-icon-size: calc(24px * var(--s-scale));
+  --van-tabbar-height: calc(50px * var(--s-scale));
+  --van-nav-bar-height: calc(46px * var(--s-scale));
+  --van-nav-bar-title-font-size: calc(16px * var(--s-scale));
+  /* 导航栏细节：返回箭头用主题色，底部描边用淡绿 */
+  --van-nav-bar-icon-color: var(--primary-color);
+  --van-nav-bar-border-color: var(--primary-tint);
+
+  /* 放大按钮（适老优化，设计文档 5.3）：统一覆盖 Vant small/mini 尺寸，右上角工具栏按钮均为 small */
+  --van-button-mini-height: calc(38px * var(--s-scale));
+  --van-button-mini-font-size: calc(15px * var(--s-scale));
+  --van-button-small-height: calc(42px * var(--s-scale));
+  --van-button-small-font-size: calc(16px * var(--s-scale));
+  --van-button-default-height: calc(44px * var(--s-scale));
+  --van-button-default-font-size: calc(16px * var(--s-scale));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-page);
+  color: var(--text-main);
+  /* 字体默认放大 1.2 倍，便于老年人阅读；随屏高等比放大 */
+  font-size: calc(18px * var(--s-scale));
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bg-page);
+}
+
+/* 页面容器 */
+.page {
+  padding: calc(12px * var(--s-scale));
+  padding-bottom: calc(70px * var(--s-scale)); /* 给底部 TabBar 留空间 */
+  min-height: calc(100vh - 60px);
+}
+
+.page-full {
+  padding-bottom: 0;
+}
+
+/* 内容铺满整屏高：用于内容较少的页面，长屏时避免底部大片空白 */
+.page-stretch {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 60px);
+}
+
+.page-stretch > :last-child {
+  margin-top: auto;
+}
+
+/* 卡片 */
+.card {
+  background: #fff;
+  border-radius: calc(12px * var(--s-scale));
+  padding: calc(14px * var(--s-scale)) calc(16px * var(--s-scale));
+  margin-bottom: calc(12px * var(--s-scale));
+  box-shadow: 0 2px 10px rgba(82, 168, 122, 0.07);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.card-title::before {
+  content: '';
+  flex: none;
+  width: 4px;
+  height: 1em;
+  border-radius: 2px;
+  background: var(--primary-color);
+}
+
+/* 文本辅助 */
+.text-secondary {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+/* 大号可点击元素 */
+.big-btn {
+  min-height: calc(48px * var(--s-scale));
+}
+
+/* Tab 主页面顶部主题横幅 */
+.tab-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(12px * var(--s-scale));
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+  border-radius: calc(14px * var(--s-scale));
+  padding: calc(16px * var(--s-scale)) calc(18px * var(--s-scale));
+  color: #fff;
+  margin-bottom: calc(14px * var(--s-scale));
+  box-shadow: 0 4px 12px rgba(82, 168, 122, 0.18);
+}
+
+.hero-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.hero-sub {
+  font-size: 0.82rem;
+  opacity: 0.92;
+  margin-top: 4px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+.hero-actions .van-button {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 路由切换淡入 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}

@@ -1,0 +1,96 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: eldercare
+  profiles:
+    active: prod
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000
+      cache-null-values: false
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 3s
+
+
+  # 文件上传大小限制（头像/体检报告等）
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  datasource:
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3307}/eldercare?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 16
+      minimum-idle: 4
+      pool-name: eldercare-hikari
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  # AI: DeepSeek
+  ai:
+    openai:
+      api-key: ${DEEPSEEK_API_KEY:}
+      base-url: https://api.deepseek.com
+      chat:
+        model: deepseek-v4-flash
+
+# MyBatis 配置
+mybatis:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+  type-aliases-package: com.eldercare.core.entity
+logging:
+  level:
+    org.springframework.boot.autoconfigure.jackson: DEBUG
+    org.springframework.context: DEBUG
+    com.eldercare: debug
+# PageHelper 分页
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+  params: count=countSql
+
+# JWT
+jwt:
+  secret: ${JWT_SECRET:eldercare-dev-secret-key-please-change-in-prod-0123456789}
+  access-token-expire: ${JWT_ACCESS_EXPIRE:7200}        # 2 小时，单位秒
+  refresh-token-expire: ${JWT_REFRESH_EXPIRE:604800}    # 7 天，单位秒
+
+eldercare:
+  ai:
+    mock-enabled: ${AI_MOCK_ENABLED:false}
+  # 跨域白名单
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174}
+  # 文件存储（data/upload/report/yyyyMM/{uuid}.pdf）
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:data/upload}
+    report-max-size: 20971520   # 20MB
+
+# Actuator 监控
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+

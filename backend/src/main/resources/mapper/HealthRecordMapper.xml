@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.HealthRecordMapper">
+
+    <select id="selectById" resultType="HealthRecord">
+        SELECT id, user_id, systolic, diastolic, blood_sugar, heart_rate, weight, bmi, memo,
+               recorded_at, create_time, update_time, deleted
+        FROM health_record
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="HealthRecord">
+        SELECT id, user_id, systolic, diastolic, blood_sugar, heart_rate, weight, bmi, memo,
+               recorded_at, create_time, update_time, deleted
+        FROM health_record
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY recorded_at DESC
+    </select>
+
+    <select id="selectByUserAndTime" resultType="HealthRecord">
+        SELECT id, user_id, systolic, diastolic, blood_sugar, heart_rate, weight, bmi, memo,
+               recorded_at, create_time, update_time, deleted
+        FROM health_record
+        WHERE user_id = #{userId} AND deleted = 0 AND recorded_at >= #{startTime}
+        ORDER BY recorded_at ASC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO health_record (user_id, systolic, diastolic, blood_sugar, heart_rate, weight, bmi, memo, recorded_at)
+        VALUES (#{userId}, #{systolic}, #{diastolic}, #{bloodSugar}, #{heartRate}, #{weight}, #{bmi}, #{memo}, #{recordedAt})
+    </insert>
+
+    <update id="logicDelete">
+        UPDATE health_record SET deleted = 1 WHERE id = #{id}
+    </update>
+
+    <select id="countByDate" resultType="long">
+        SELECT COUNT(*) FROM health_record WHERE deleted = 0 AND DATE(recorded_at) = #{date}
+    </select>
+
+</mapper>

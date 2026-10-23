@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AssessmentResultMapper">
+
+    <select id="selectById" resultType="AssessmentResult">
+        SELECT id,
+               user_id,
+               questionnaire_id,
+               answers,
+               score,
+               ai_suggestion,
+               create_time,
+               update_time,
+               deleted,
+               status,
+               error_msg
+        FROM assessment_result
+        WHERE id = #{id}
+          AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="AssessmentResult">
+        SELECT id,
+               user_id,
+               questionnaire_id,
+               answers,
+               score,
+               ai_suggestion,
+               create_time,
+               update_time,
+               deleted
+        FROM assessment_result
+        WHERE user_id = #{userId}
+          AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectHistoryByUserId" resultType="com.eldercare.api.vo.AssessmentVO">
+        SELECT r.id,
+               r.questionnaire_id,
+               q.title AS questionnaire_title,
+               r.score,
+               r.ai_suggestion,
+               r.create_time,
+               r.status,
+               r.error_msg
+        FROM assessment_result r
+                 LEFT JOIN questionnaire q ON r.questionnaire_id = q.id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.create_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO assessment_result (user_id, questionnaire_id, answers, score, ai_suggestion)
+        VALUES (#{userId}, #{questionnaireId}, #{answers}, #{score}, #{aiSuggestion})
+    </insert>
+
+    <update id="logicDelete">
+        UPDATE assessment_result
+        SET deleted = 1
+        WHERE id = #{id}
+    </update>
+
+    <update id="archiveBefore">
+        UPDATE assessment_result
+        SET deleted = 1
+        WHERE create_time &lt; #{before}
+    </update>
+
+    <update id="updateSuggestion">
+        UPDATE assessment_result
+        SET status        = #{status},
+            ai_suggestion = #{aiSuggestion},
+            error_msg     = #{errorMsg}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AiConversationSessionMapper">
+
+    <select id="selectById" resultType="AiConversationSession">
+        SELECT id, user_id, session_name, create_time, update_time, deleted
+        FROM ai_conversation_session
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectByUserId" resultType="AiConversationSession">
+        SELECT id, user_id, session_name, create_time, update_time, deleted
+        FROM ai_conversation_session
+        WHERE user_id = #{userId} AND deleted = 0
+        ORDER BY update_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO ai_conversation_session (user_id, session_name)
+        VALUES (#{userId}, #{sessionName})
+    </insert>
+
+    <update id="update">
+        UPDATE ai_conversation_session SET session_name = #{sessionName} WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <update id="touch">
+        UPDATE ai_conversation_session SET session_name = session_name WHERE id = #{id}
+    </update>
+
+    <update id="logicDelete">
+        UPDATE ai_conversation_session SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

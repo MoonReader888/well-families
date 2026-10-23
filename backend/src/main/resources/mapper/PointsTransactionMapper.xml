@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.PointsTransactionMapper">
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO points_transaction (user_id, change_amount, balance_after, source, ref_id, expire_time)
+        VALUES (#{userId}, #{changeAmount}, #{balanceAfter}, #{source}, #{refId}, #{expireTime})
+    </insert>
+
+    <select id="selectByUserId" resultType="PointsTransaction">
+        SELECT id, user_id, change_amount, balance_after, source, ref_id, expire_time, create_time
+        FROM points_transaction
+        WHERE user_id = #{userId}
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectExpired" resultType="PointsTransaction">
+        SELECT id, user_id, change_amount, balance_after, source, ref_id, expire_time, create_time
+        FROM points_transaction
+        WHERE change_amount > 0 AND expire_time &lt; NOW()
+    </select>
+
+    <delete id="deleteById">
+        DELETE FROM points_transaction WHERE id = #{id}
+    </delete>
+
+</mapper>

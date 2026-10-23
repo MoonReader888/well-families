@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.AppointmentPackageMapper">
+
+    <select id="selectById" resultType="AppointmentPackage">
+        SELECT id, name, description, price, suitable_people, items, status, create_time, update_time, deleted
+        FROM appointment_package
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectEnabled" resultType="AppointmentPackage">
+        SELECT id, name, description, price, suitable_people, items, status, create_time, update_time, deleted
+        FROM appointment_package
+        WHERE status = 'ENABLED' AND deleted = 0
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectList" resultType="AppointmentPackage">
+        SELECT id, name, description, price, suitable_people, items, status, create_time, update_time, deleted
+        FROM appointment_package
+        WHERE deleted = 0
+        ORDER BY id
+    </select>
+
+    <select id="selectPackagePage" resultType="AppointmentPackage">
+        SELECT id, name, description, price, suitable_people, items, status, create_time, update_time, deleted
+        FROM appointment_package
+        WHERE deleted = 0
+        <if test="name != null and name != ''">AND name LIKE CONCAT('%', #{name}, '%')</if>
+        ORDER BY id
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO appointment_package (name, description, price, suitable_people, items, status)
+        VALUES (#{name}, #{description}, #{price}, #{suitablePeople}, #{items}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE appointment_package SET name = #{name}, description = #{description},
+               price = #{price}, suitable_people = #{suitablePeople}, items = #{items}, status = #{status}
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <update id="logicDelete">
+        UPDATE appointment_package SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>

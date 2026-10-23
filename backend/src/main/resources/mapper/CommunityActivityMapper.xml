@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.eldercare.core.mapper.CommunityActivityMapper">
+
+    <select id="selectById" resultType="CommunityActivity">
+        SELECT id, title, cover_url, content, registration_start, registration_end, activity_start,
+               activity_end, max_participants, current_participants, status, create_time, update_time, deleted
+        FROM community_activity
+        WHERE id = #{id} AND deleted = 0
+    </select>
+
+    <select id="selectVisibleWithRegistration" resultType="CommunityActivity">
+        SELECT a.id,
+               a.title,
+               a.cover_url,
+               a.content,
+               a.registration_start,
+               a.registration_end,
+               a.activity_start,
+               a.activity_end,
+               a.max_participants,
+               a.current_participants,
+               a.status,
+               a.create_time,
+               a.update_time,
+               a.deleted,
+               r.id              AS reg_id,
+               r.check_in_status AS reg_check_in_status
+        FROM community_activity a
+                 LEFT JOIN activity_registration r
+                           ON r.activity_id = a.id
+                               AND r.user_id = #{userId}
+                               AND r.deleted = 0
+        WHERE a.status != 'DRAFT'
+        AND a.deleted = 0
+        ORDER BY a.activity_start DESC
+    </select>
+
+    <select id="selectList" resultType="CommunityActivity">
+        SELECT id, title, cover_url, content, registration_start, registration_end, activity_start,
+               activity_end, max_participants, current_participants, status, create_time, update_time, deleted
+        FROM community_activity
+        WHERE deleted = 0
+        ORDER BY id
+    </select>
+
+    <select id="selectActivityPage" resultType="CommunityActivity">
+        SELECT id, title, cover_url, content, registration_start, registration_end, activity_start,
+               activity_end, max_participants, current_participants, status, create_time, update_time, deleted
+        FROM community_activity
+        WHERE deleted = 0
+        <if test="title != null and title != ''">AND title LIKE CONCAT('%', #{title}, '%')</if>
+        ORDER BY id
+    </select>
+
+    <select id="selectMyActivitiesWithRegistration" resultType="CommunityActivity">
+        SELECT a.id,
+               a.title,
+               a.cover_url,
+               a.content,
+               a.registration_start,
+               a.registration_end,
+               a.activity_start,
+               a.activity_end,
+               a.max_participants,
+               a.current_participants,
+               a.status,
+               a.create_time,
+               a.update_time,
+               a.deleted,
+               r.id              AS reg_id,
+               r.check_in_status AS reg_check_in_status
+        FROM activity_registration r
+                 INNER JOIN community_activity a ON a.id = r.activity_id
+        WHERE r.user_id = #{userId}
+          AND r.deleted = 0
+          AND a.deleted = 0
+        ORDER BY a.activity_start DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO community_activity (title, cover_url, content, registration_start, registration_end,
+                                        activity_start, activity_end, max_participants, current_participants, status)
+        VALUES (#{title}, #{coverUrl}, #{content}, #{registrationStart}, #{registrationEnd},
+                #{activityStart}, #{activityEnd}, #{maxParticipants}, #{currentParticipants}, #{status})
+    </insert>
+
+    <update id="update">
+        UPDATE community_activity SET title = #{title}, cover_url = #{coverUrl}, content = #{content},
+               registration_start = #{registrationStart}, registration_end = #{registrationEnd},
+               activity_start = #{activityStart}, activity_end = #{activityEnd},
+               max_participants = #{maxParticipants}, status = #{status}
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <update id="occupyParticipant">
+        UPDATE community_activity SET current_participants = current_participants + 1
+        WHERE id = #{id} AND deleted = 0 AND current_participants &lt; max_participants
+    </update>
+
+    <update id="releaseParticipant">
+        UPDATE community_activity SET current_participants = current_participants - 1
+        WHERE id = #{id} AND deleted = 0 AND current_participants > 0
+    </update>
+
+    <update id="logicDelete">
+        UPDATE community_activity SET deleted = 1 WHERE id = #{id}
+    </update>
+
+</mapper>
